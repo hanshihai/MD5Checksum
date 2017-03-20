@@ -27,7 +27,7 @@ public class Checksum {
             try {
                 this.digest = MessageDigest.getInstance(this.checksumAlgorithm);
             } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
+                throw new RuntimeException("No MD5 Algorithm!", e);
             }
         }
 
@@ -47,7 +47,7 @@ public class Checksum {
     }
 
     public String digest(boolean reset) {
-        MessageDigest clone = null;
+        MessageDigest clone;
         if(!reset) {
             try {
                 clone = (MessageDigest)this.digest.clone();
@@ -64,7 +64,7 @@ public class Checksum {
     }
 
     public String digest(Path p) {
-        if(p != null && Files.exists(p, new LinkOption[0]) && !Files.isDirectory(p, new LinkOption[0])) {
+        if(p != null && p.toFile().exists() && !p.toFile().isDirectory()) {
 
             try (DigestInputStream digestInput = this.getDigestInputStream(Files.newInputStream(p, new OpenOption[0]));){
 
@@ -75,9 +75,8 @@ public class Checksum {
                 String result = this.digest(true);
                 return result;
             } catch (IOException ioe) {
-                ioe.printStackTrace();
+                throw new RuntimeException("Failed to load file :" + p, ioe);
             }
-            return null;
         } else {
             return null;
         }
